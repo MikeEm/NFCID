@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context=".MainActivity"
+        android:id="@+id/mainRelativeLayout">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Effacer"
+            android:id="@+id/buttonClear"
+            android:onClick="effacerHist"
+            android:layout_gravity="right"
+            android:layout_below="@+id/monTexte"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/buttonHist"
+            android:layout_alignBottom="@+id/buttonHist"/>
+
+        <Button
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Voir/Masquer Historique"
+            android:id="@+id/buttonHist"
+            android:onClick="montrerValEnreg"
+            android:layout_below="@+id/monTexte"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="41dp" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contrôle Wifi"
+            android:id="@+id/checkBoxWifi"
+            android:layout_row="4"
+            android:layout_column="2"
+            android:layout_gravity="center_horizontal"
+            android:layout_below="@+id/tagNamingBox"
+            android:layout_alignParentStart="true"
+            android:onClick="afficherSwitchWifi"/>
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Éteint - Allume"
+            android:id="@+id/switchWifi"
+            android:layout_below="@+id/checkBoxWifi"
+            android:layout_alignLeft="@+id/switchBluetooth"
+            android:layout_alignParentEnd="true" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="Valider"
+            android:id="@+id/buttonValider"
+            android:onClick="validParam"
+            android:layout_row="7"
+            android:layout_column="8"
+            android:layout_gravity="right"
+            android:layout_marginTop="35dp"
+            android:layout_below="@+id/switchBluetooth"
+            android:layout_alignEnd="@+id/tagNamingBox" />
+
+        <TextView
+            android:text="Hello World!"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/monTexte"
+            android:textColor="#141313"
+            android:layout_row="0"
+            android:layout_column="0" />
+
+        <EditText
+            android:id="@+id/tagNamingBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:imeOptions="actionSend"
+            android:backgroundTint="@color/background_material_dark"
+            android:background="@android:drawable/editbox_background"
+            android:textColor="#f68f41"
+            android:hint="Nommer le tag."
+            android:textColorHint="#eeb46d"
+            android:layout_row="2"
+            android:layout_column="3"
+            android:layout_gravity="center_horizontal"
+            android:layout_below="@+id/buttonClear"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="51dp" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contrôle Mode Silencieux"
+            android:id="@+id/checkBoxMute"
+            android:onClick="uncheckVol"
+            android:layout_below="@+id/switchWifi"
+            android:layout_alignParentStart="true"/>
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Audible - Silencieux"
+            android:id="@+id/switchMute"
+            android:layout_below="@+id/checkBoxMute"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/checkBoxVolume" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contrôle du volume"
+            android:id="@+id/checkBoxVolume"
+            android:onClick="afficherSpinner"
+            android:layout_below="@+id/switchMute"
+            android:layout_alignParentStart="true" />
+
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/spinnerVolume"
+            android:layout_below="@+id/checkBoxVolume"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/checkBoxMute" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contrôle Bluetooth"
+            android:id="@+id/checkBoxBluetooth"
+            android:onClick="afficherSwitch"
+            android:layout_below="@+id/spinnerVolume"
+            android:layout_alignParentStart="true" />
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Éteint - Allume"
+            android:id="@+id/switchBluetooth"
+            android:layout_below="@+id/checkBoxBluetooth"
+            android:layout_alignParentEnd="true" />
+
+        <Spinner
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/spinnerApp"
+            android:layout_alignBottom="@+id/buttonValider"
+            android:layout_alignEnd="@+id/checkBoxWifi" />
+
+    </RelativeLayout>
+</ScrollView>

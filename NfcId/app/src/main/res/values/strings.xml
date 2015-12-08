@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">NfcId</string>
+    <string name="NFC_univCard">026C9DBD</string>
+    <string name="NFC_GreenTag">045F8BB2953C81</string>
+    <string name="NFC_passpassCard">C08743D2</string>
+    <string name="Preference_cle_id">preferenceCleId</string>
+    <string name="defaultMessage">Pret pour la capture; approcher tag</string>
+    <string name="preferenceIdVol">preferenceIdVol</string>
+    <string name="preferenceIdBt">preferenceIdBt</string>
+    <string name="preferenceIdValBt">preferenceIdValBt</string>
+    <string name="preferenceIdValWifi">preferenceIdValWifi</string>
+    <string name="preferenceIdValMute">preferenceIdValMute</string>
+</resources>
