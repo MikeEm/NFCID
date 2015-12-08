@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
         //On rend nos paramètres invisible
         cacherParametrage();
+        getAllAppsInSpinner();
 
         //Creation de notre boite de texte
         monTexte = (TextView) findViewById(R.id.monTexte);
@@ -702,7 +703,10 @@ public class MainActivity extends AppCompatActivity {
         List<Drawable>listIconApp = new ArrayList<>();
         Iterator<ApplicationInfo> appIter = listApp.iterator();
         while(appIter.hasNext()){
-            listNameApp.add(appIter.next().loadLabel(pm));
+            ApplicationInfo currentIter = appIter.next();
+            Intent myIntent = getPackageManager().getLaunchIntentForPackage(currentIter.packageName);
+            if (myIntent!=null)
+                listNameApp.add(currentIter.loadLabel(pm));
         }
 
         ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item, listNameApp);
@@ -711,9 +715,10 @@ public class MainActivity extends AppCompatActivity {
         spinnerApp.setAdapter(adapter);
     }
 
-    public String retrouvePackage(CharSequence labelApp){
+    public void lanceApp(CharSequence labelApp){
         String res = null;
 
+        //On récupère le nom du package et on le stocke dans la variable res
         PackageManager pm = getPackageManager();
         List<ApplicationInfo> listApp = pm.getInstalledApplications(PackageManager.GET_META_DATA);
         Iterator<ApplicationInfo> iterListApp = listApp.iterator();
@@ -724,6 +729,27 @@ public class MainActivity extends AppCompatActivity {
                 res = thisApp.packageName;
         }
 
-        return res;
+        //Lancement de l'application
+        Intent myIntent = getPackageManager().getLaunchIntentForPackage(res);
+        List activities = pm.queryIntentActivities(myIntent,PackageManager.MATCH_DEFAULT_ONLY);
+        boolean isIntentSafe = activities.size() > 0;
+        // Tentative de lancement d'une activité capable de répondre à notre intent
+        if (myIntent.resolveActivity(getPackageManager()) != null || isIntentSafe) {
+            //try {
+                startActivity(myIntent);
+           // }
+            //catch(Error e){
+              // Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+           // }
+        }
+        else
+            Toast.makeText(this, "Application choisie non trouvée, package : "+res, Toast.LENGTH_LONG).show();
     }
+
+    public void testApp(View view){
+        spinnerApp = (Spinner) findViewById(R.id.spinnerApp);
+        CharSequence charseq = (CharSequence) spinnerApp.getSelectedItem();
+        lanceApp(charseq);
+    }
+
 }

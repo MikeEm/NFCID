@@ -6,7 +6,7 @@
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="3600dp"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
@@ -53,7 +53,6 @@
             android:text="Éteint - Allume"
             android:id="@+id/switchWifi"
             android:layout_below="@+id/checkBoxWifi"
-            android:layout_alignLeft="@+id/switchBluetooth"
             android:layout_alignParentEnd="true" />
 
         <Button
@@ -67,7 +66,7 @@
             android:layout_column="8"
             android:layout_gravity="right"
             android:layout_marginTop="35dp"
-            android:layout_below="@+id/switchBluetooth"
+            android:layout_below="@+id/AppControl"
             android:layout_alignEnd="@+id/tagNamingBox" />
 
         <TextView
@@ -132,29 +131,67 @@
             android:layout_alignParentEnd="true"
             android:layout_toEndOf="@+id/checkBoxMute" />
 
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Contrôle Bluetooth"
-            android:id="@+id/checkBoxBluetooth"
-            android:onClick="afficherSwitch"
-            android:layout_below="@+id/spinnerVolume"
-            android:layout_alignParentStart="true" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/spinnerVolume"
+            android:id="@+id/BluetoothControl">
 
-        <Switch
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Éteint - Allume"
-            android:id="@+id/switchBluetooth"
-            android:layout_below="@+id/checkBoxBluetooth"
-            android:layout_alignParentEnd="true" />
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Contrôle Bluetooth"
+                android:id="@+id/checkBoxBluetooth"
+                android:onClick="afficherSwitch"
+                android:layout_below="@+id/spinnerVolume"
+                android:layout_alignParentStart="true" />
 
-        <Spinner
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Éteint - Allume"
+                android:id="@+id/switchBluetooth"
+                android:layout_below="@+id/checkBoxBluetooth"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="0dp"
+                android:layout_gravity="right" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/AppControl"
+            android:layout_below="@+id/BluetoothControl">
+
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lancement Application"
+                android:id="@+id/checkBoxApp"
+                android:onClick="afficherSpinnerApp"
+                android:layout_alignParentStart="true" />
+
+            <Spinner
+                android:layout_width="141dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinnerApp"
+                android:layout_alignBottom="@+id/buttonValider"
+                android:layout_alignStart="@+id/checkBoxBluetooth"
+                android:layout_alignEnd="@+id/checkBoxBluetooth"
+                android:layout_gravity="right" />
+        </LinearLayout>
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/spinnerApp"
+            android:text="test"
+            android:id="@+id/button"
             android:layout_alignBottom="@+id/buttonValider"
-            android:layout_alignEnd="@+id/checkBoxWifi" />
+            android:layout_alignParentStart="true"
+            android:onClick="testApp"/>
 
     </RelativeLayout>
 </ScrollView>
