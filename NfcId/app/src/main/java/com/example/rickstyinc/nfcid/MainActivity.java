@@ -59,9 +59,9 @@ import static android.view.View.VISIBLE;
  * Ranger les fonctions
  * DONE+ : uniquement vertical
  *MIGHT NOT BE DOABLE toggle localisation
- * gestion des différents volumes
- * implémentation bouton "Annuler"
- * modifier la mise en page (utiliser des sous-layouts
+ * DONE gestion des différents volumes
+ * DONE implémentation bouton "Annuler"
+ * DONE modifier la mise en page (utiliser des sous-layouts
  * + : mettre le form dans un layout et toggle sa visibilité**/
 
 
@@ -243,6 +243,8 @@ public class MainActivity extends AppCompatActivity {
                     int volMusDetecte = setVolMus.getInt(detectedId, 0);
                     int volAlarmDetecte = setVolAlarm.getInt(detectedId, 0);
                     choisirVolumeSyst(volSystDetecte);
+                    choisirVolumeMusic(volMusDetecte);
+                    choisirVolumeAlarm(volAlarmDetecte);
                 }
 
                 //Si le tag gère la modification du Bluetooth
