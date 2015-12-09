@@ -40,6 +40,7 @@ import android.widget.Toast;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -47,15 +48,21 @@ import java.util.Map;
 import java.util.Objects;
 
 import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 /**TODO :
- *Activation des capteurs Bluetooth et NOT POSSIBLE - du réseau 3G/cellulaire
+ *NOT DOABLE Activation des capteurs Bluetooth et NOT POSSIBLE - du réseau 3G/cellulaire
  *DONE -*Programmation du comportement via IHM
- *Lancement d'une app
+ *DONE Lancement d'une app
  * DONE - Enregistrement dynamique des ID
  * DONE -foreground thingy
  * Ranger les fonctions
- * + : uniquement vertical**/
+ * DONE+ : uniquement vertical
+ *MIGHT NOT BE DOABLE toggle localisation
+ * gestion des différents volumes
+ * implémentation bouton "Annuler"
+ * modifier la mise en page (utiliser des sous-layouts
+ * + : mettre le form dans un layout et toggle sa visibilité**/
 
 
 public class MainActivity extends AppCompatActivity {
@@ -102,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences setVolume;    /*nom : preferenceIdVol; vol=0=>pas de modifs*/
     private SharedPreferences setBluetooth; /*nom : preferenceIdBt; true=>agit sur le Bt*/
     private SharedPreferences valBt; /*nom : preferenceIdValBt; true=>allume-false=>eteint*/
+    private SharedPreferences setApp; /*nom : preferenceIDApp; true=>agit lance une app*/
+    private SharedPreferences appChoisie; /*nom : preferenceIdAppCh; retourne nom App*/
 
     private Map<String, ?> allPreferences;
     private Map<String, ?> allPrefWifi;
@@ -119,7 +128,9 @@ public class MainActivity extends AppCompatActivity {
     private Spinner volSpinner;
     private CheckBox activBluetooth;
     private Switch switchBluetooth;
+    private CheckBox activApp;
     private Spinner spinnerApp;
+
 
     //Bouton valider
     private Button boutonValider;
@@ -131,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
 
         //On rend nos paramètres invisible
         cacherParametrage();
-        getAllAppsInSpinner();
 
         //Creation de notre boite de texte
         monTexte = (TextView) findViewById(R.id.monTexte);
@@ -196,6 +206,9 @@ public class MainActivity extends AppCompatActivity {
             setValMute = this.getSharedPreferences(getString(R.string.preferenceIdValMute), Context.MODE_PRIVATE);
             setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
             valBt = this.getSharedPreferences(getString(R.string.preferenceIdValBt), Context.MODE_PRIVATE);
+            setApp = this.getSharedPreferences("preferenceIdApp", Context.MODE_PRIVATE) ;
+            appChoisie = this.getSharedPreferences("preferenceIdAppCh", MODE_PRIVATE) ;
+
 
             //if(Objects.equals(detectedId, sharedPrefId.getString("nfc_univCard", null))){
             if(allPreferences.containsKey(detectedId)){
@@ -220,6 +233,13 @@ public class MainActivity extends AppCompatActivity {
                 //Si le tag gère la modification du Bluetooth
                 if (setBluetooth.getBoolean(detectedId, false))
                     allumeEteintBt(valBt.getBoolean(detectedId, false));
+
+                //Si le tag gère le lancement d'une app
+                if (setApp.getBoolean(detectedId, false)){
+                    CharSequence nomAppC = (CharSequence)appChoisie.getString(detectedId, null);
+                    lanceApp(nomAppC);
+                    Toast.makeText(this, "Ouverture de l'application "+nomAppC, Toast.LENGTH_LONG).show();
+                }
             }
 
             else{
@@ -289,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
         return res;
     }
 
+    //Affichage de l'historique
     private void showAllPreferences(TextView tv, Map<String, ?> spAll) {
 
         if (histVisible) {
@@ -304,6 +325,8 @@ public class MainActivity extends AppCompatActivity {
             setVolume = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
             setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
             valBt = this.getSharedPreferences(getString(R.string.preferenceIdValBt), Context.MODE_PRIVATE);
+            setApp = this.getSharedPreferences("preferenceIdApp", Context.MODE_PRIVATE) ;
+            appChoisie = this.getSharedPreferences("preferenceIdAppCh", MODE_PRIVATE) ;
             for (Map.Entry<String, ?> entree : spAll.entrySet()) {
                 String cle = entree.getKey();
                 Object val = entree.getValue();
@@ -365,23 +388,38 @@ public class MainActivity extends AppCompatActivity {
                 else
                     btChoisi = "désactivé";
 
+                //Lancement App?
+                boolean launchApp = setApp.getBoolean(cle, false);
+                String appChecked;
+                String nomApp = null;
+                if(launchApp){
+                    appChecked = "activé";
+                    nomApp = appChoisie.getString(cle, null);
+                }
+                else
+                    appChecked  ="désactivé";
 
+                //On écrit les différents paramètres dans la variable texte
                 texte = texte + "ID = " + cle + " " +
                         "\n→Nom =" + val +
                         " \n→Contrôle wifi = " + wifiChoisi;
                         if (setsWifi)
-                            texte = texte+"; Met à l'état: "+wifiIsOnOff;
+                            texte = texte+";\n            Met à l'état: "+wifiIsOnOff;
                 texte = texte + "\n→Contrôle Silencieux = "+muteChoisi;
                         if(setsMute)
-                            texte = texte+"; Met à l'état: "+muteIsOnOff;
+                            texte = texte+";\n            Met à l'état: "+muteIsOnOff;
                 texte = texte+"\n→Contrôle Volume = "+volChoisi;
                          if (setsVol>0){
-                             texte = texte+"; Volume choisi = "+setsVol;
+                             texte = texte+";\n           Volume choisi = "+setsVol;
                          }
                 texte = texte + "\n→Contrôle Bluetooth = "+ btChoisi;
                         if (setsBt){
-                            texte = texte + "; Met à l'état: " +btIsOnOff;
+                            texte = texte + ";\n            Met à l'état: " +btIsOnOff;
                         }
+                texte = texte + "\n→Lancement Application = "+ appChecked;
+                if (launchApp){
+                    texte = texte + ";\n            Lance l'application: " +nomApp;
+                }
                 texte = texte+"\n \n";
             }
             tv.setText(texte);
@@ -391,38 +429,42 @@ public class MainActivity extends AppCompatActivity {
 
     public void effacerHist(View view){
         sharedPrefId = this.getSharedPreferences("preferenceCleId", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPrefId.edit();
-        editor.clear();
-        editor.commit();
+        effaceSP(sharedPrefId);
 
         setWifi = this.getSharedPreferences("preferenceIdWifi", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editorW = setWifi.edit();
-        editorW.clear();
-        editorW.commit();
+        effaceSP(setWifi);
+        //setValWifi?;
 
         setMute = this.getSharedPreferences("preferenceIdMute", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editorM = setMute.edit();
-        editorM.clear();
-        editorM.commit();
+        effaceSP(setMute);
+        //setValMute?;
 
         setVolume = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editorV = setVolume.edit();
-        editorV.clear();
-        editorV.commit();
+        effaceSP(setVolume);
 
         setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editorB1 = setVolume.edit();
-        editorB1.clear();
-        editorB1.commit();
+        effaceSP(setBluetooth);
 
         valBt = this.getSharedPreferences(getString(R.string.preferenceIdValBt), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editorB2 = setVolume.edit();
-        editorB2.clear();
-        editorB2.commit();
+        effaceSP(valBt);
+
+        setApp = this.getSharedPreferences("preferenceIdApp", Context.MODE_PRIVATE) ;
+        appChoisie = this.getSharedPreferences("preferenceIdAppCh", MODE_PRIVATE) ;
+
+        effaceSP(setApp);
+        effaceSP(appChoisie);
 
         Toast.makeText(this, "Historique effacé", Toast.LENGTH_SHORT).show();
         monTexte.setText(R.string.defaultMessage);
     }
+
+    //Efface les valeurs enregistrées dans l'objet SharedPreferences
+    public void effaceSP(SharedPreferences SP){
+        SharedPreferences.Editor editSP = SP.edit();
+        editSP.clear();
+        editSP.commit();
+    }
+
 
     public void montrerValEnreg(View view){
         sharedPrefId = this.getSharedPreferences("preferenceCleId", Context.MODE_PRIVATE);
@@ -497,12 +539,26 @@ public class MainActivity extends AppCompatActivity {
         switchBluetooth.setChecked(false);
         switchBluetooth.setVisibility(GONE);
 
+        //Récupère params app
+        activApp = (CheckBox)findViewById(R.id.checkBoxApp);
+        setApp = this.getSharedPreferences("preferenceIdApp", Context.MODE_PRIVATE);
+        ajouteEntreeBoolSP(detectedId, activApp.isChecked(), setApp);
+
+        if (activApp.isChecked()){
+            spinnerApp = (Spinner)findViewById(R.id.spinnerApp);
+            appChoisie = this.getSharedPreferences("preferenceIdAppCh", Context.MODE_PRIVATE);
+            String nomAppChoisie = spinnerApp.getSelectedItem().toString();
+            ajouteEntreeStringSP(detectedId, nomAppChoisie, appChoisie);
+            spinnerApp.setVisibility(GONE);
+       }
+        activApp.setVisibility(GONE);
+
         Button boutonValider = (Button)findViewById(R.id.buttonValider);
         boutonValider.setVisibility(GONE);
         Toast.makeText(this, "Paramètres enregistrés", Toast.LENGTH_SHORT).show();
     }
 
-    //Afficher parametrage
+    //Afficher le formulaire de parametrage
     public void afficherParametrage(){
         monTexte = (TextView) findViewById(R.id.monTexte);
         activWifi = (CheckBox) findViewById(R.id.checkBoxWifi);
@@ -510,6 +566,7 @@ public class MainActivity extends AppCompatActivity {
         boutonValider = (Button) findViewById(R.id.buttonValider);
         activVol = (CheckBox) findViewById(R.id.checkBoxVolume);
         activBluetooth = (CheckBox)findViewById(R.id.checkBoxBluetooth);
+        activApp = (CheckBox)findViewById(R.id.checkBoxApp);
 
         tagNamingBox.setVisibility(View.VISIBLE);
         activWifi.setVisibility(View.VISIBLE);
@@ -517,6 +574,7 @@ public class MainActivity extends AppCompatActivity {
         boutonValider.setVisibility(View.VISIBLE);
         activVol.setVisibility(View.VISIBLE);
         activBluetooth.setVisibility(View.VISIBLE);
+        activApp.setVisibility(View.VISIBLE);
 
         tagNamingBox.requestFocus();
         imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -534,6 +592,8 @@ public class MainActivity extends AppCompatActivity {
         switchBluetooth = (Switch)findViewById(R.id.switchBluetooth);
         switchWifi = (Switch)findViewById(R.id.switchWifi);
         switchMute = (Switch)findViewById(R.id.switchMute);
+        activApp = (CheckBox)findViewById(R.id.checkBoxApp);
+        spinnerApp = (Spinner)findViewById(R.id.spinnerApp);
 
         tagNamingBox.setVisibility(GONE);
         activWifi.setVisibility(GONE);
@@ -545,8 +605,11 @@ public class MainActivity extends AppCompatActivity {
         switchBluetooth.setVisibility(GONE);
         switchWifi.setVisibility(GONE);
         switchMute.setVisibility(GONE);
+        activApp.setVisibility(GONE);
+        spinnerApp.setVisibility(GONE);
     }
 
+    //Agît comme un interrupteur wifi, selon la valeur du boléen en paramètre
     public void interrupteurWifi(boolean valWifi){
         wifiMan = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         boolean isWifiOn = wifiMan.isWifiEnabled();
@@ -560,6 +623,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Active/désactive le mode silencieux, selon le booléen donné en entrée
     public void interrupteurSon(boolean valMute){
         audioManager = (AudioManager) this.getSystemService(this.AUDIO_SERVICE);
         if(valMute)
@@ -731,7 +795,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Lancement de l'application
         Intent myIntent = getPackageManager().getLaunchIntentForPackage(res);
-        List activities = pm.queryIntentActivities(myIntent,PackageManager.MATCH_DEFAULT_ONLY);
+        List activities = pm.queryIntentActivities(myIntent, PackageManager.MATCH_DEFAULT_ONLY);
         boolean isIntentSafe = activities.size() > 0;
         // Tentative de lancement d'une activité capable de répondre à notre intent
         if (myIntent.resolveActivity(getPackageManager()) != null || isIntentSafe) {
@@ -746,10 +810,23 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Application choisie non trouvée, package : "+res, Toast.LENGTH_LONG).show();
     }
 
+    public void afficherSpinnerApp(View view){
+        activApp = (CheckBox)findViewById(R.id.checkBoxApp);
+        spinnerApp = (Spinner)findViewById(R.id.spinnerApp);
+        if (activApp.isChecked() && spinnerApp.getVisibility() == GONE){
+            spinnerApp.setVisibility(View.VISIBLE);
+            getAllAppsInSpinner();
+        }
+        else if(!activApp.isChecked() && spinnerApp.getVisibility() == VISIBLE)
+            spinnerApp.setVisibility(GONE);
+    }
+
     public void testApp(View view){
         spinnerApp = (Spinner) findViewById(R.id.spinnerApp);
         CharSequence charseq = (CharSequence) spinnerApp.getSelectedItem();
-        lanceApp(charseq);
+        String sttr  =(String) charseq;
+        CharSequence charseqPrime = (CharSequence) sttr;
+        lanceApp(sttr);
     }
 
 }
