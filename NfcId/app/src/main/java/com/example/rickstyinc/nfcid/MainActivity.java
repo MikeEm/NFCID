@@ -106,7 +106,10 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences setValWifi;  /*nom : preferenceIdValWifi*/
     private SharedPreferences setMute;
     private SharedPreferences setValMute;
-    private SharedPreferences setVolume;    /*nom : preferenceIdVol; vol=0=>pas de modifs*/
+    private SharedPreferences setVol; /*nom : preferenceIdCheckVol*/
+    private SharedPreferences setVolMus; /*nom : preferenceIdVolMus*/
+    private SharedPreferences setVolAlarm; /*nom : preferenceIdVolAlarm*/
+    private SharedPreferences setVolSyst;    /*nom : preferenceIdVol; vol=0=>pas de modifs*/
     private SharedPreferences setBluetooth; /*nom : preferenceIdBt; true=>agit sur le Bt*/
     private SharedPreferences valBt; /*nom : preferenceIdValBt; true=>allume-false=>eteint*/
     private SharedPreferences setApp; /*nom : preferenceIDApp; true=>agit lance une app*/
@@ -125,11 +128,17 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox activMute;
     private Switch switchMute;
     private CheckBox activVol;
-    private Spinner volSpinner;
+    private Spinner volSpinner;  /*Volume systeme*/
+    private Spinner alarmSpinner;
+    private Spinner musicSpinner;
     private CheckBox activBluetooth;
     private Switch switchBluetooth;
     private CheckBox activApp;
     private Spinner spinnerApp;
+    private TextView textVolSyst;
+    private TextView textVolAlarm;
+    private TextView textVolMus;
+    private Button boutonAnnuler;
 
 
     //Bouton valider
@@ -201,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
             allPreferences = sharedPrefId.getAll();
             setWifi = this.getSharedPreferences("preferenceIdWifi", Context.MODE_PRIVATE);
             setValWifi = this.getSharedPreferences(getString(R.string.preferenceIdValWifi), Context.MODE_PRIVATE);
-            setVolume = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
+            setVol = this.getSharedPreferences(getString(R.string.preferenceIdCheckVol), Context.MODE_PRIVATE);
             setMute = this.getSharedPreferences("preferenceIdMute", Context.MODE_PRIVATE);
             setValMute = this.getSharedPreferences(getString(R.string.preferenceIdValMute), Context.MODE_PRIVATE);
             setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
@@ -213,8 +222,8 @@ public class MainActivity extends AppCompatActivity {
             //if(Objects.equals(detectedId, sharedPrefId.getString("nfc_univCard", null))){
             if(allPreferences.containsKey(detectedId)){
                 String nomTag = sharedPrefId.getString(detectedId, "INCONNU");
-                monTexte.setText("Salut "+nomTag+"!!");
-                Toast.makeText(this, "Tag reconnu: Hi "+nomTag+"!!", Toast.LENGTH_SHORT).show();
+                monTexte.setText("Tag "+nomTag+" détecté.");
+                Toast.makeText(this, "Tag reconnu: Paramétrage en cours...", Toast.LENGTH_SHORT).show();
 
                 //Si le tag détécté gère le wifi:
                 if (setWifi.getBoolean(detectedId, false))
@@ -225,9 +234,15 @@ public class MainActivity extends AppCompatActivity {
                     interrupteurSon(setValMute.getBoolean(detectedId, false));
 
                 //Si le tag détécté gère la modification du volume
-                int volDetecte = setVolume.getInt(detectedId,0);
-                if (volDetecte>0) {
-                    choisirVolume(volDetecte);
+                if(setVol.getBoolean(detectedId, false)) {
+                    setVolSyst=this.getSharedPreferences(getString(R.string.preferenceIdVol), MODE_PRIVATE);
+                    setVolMus=this.getSharedPreferences(getString(R.string.preferenceIdVolMus), MODE_PRIVATE);
+                    setVolAlarm=this.getSharedPreferences(getString(R.string.preferenceIdVolAlarm), MODE_PRIVATE);
+
+                    int volSystDetecte = setVolSyst.getInt(detectedId, 0);
+                    int volMusDetecte = setVolMus.getInt(detectedId, 0);
+                    int volAlarmDetecte = setVolAlarm.getInt(detectedId, 0);
+                    choisirVolumeSyst(volSystDetecte);
                 }
 
                 //Si le tag gère la modification du Bluetooth
@@ -322,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
             setValWifi = this.getSharedPreferences(getString(R.string.preferenceIdValWifi), Context.MODE_PRIVATE);
             setMute = this.getSharedPreferences("preferenceIdMute", Context.MODE_PRIVATE);
             setValMute = this.getSharedPreferences(getString(R.string.preferenceIdValMute), Context.MODE_PRIVATE);
-            setVolume = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
+            setVol = this.getSharedPreferences(getString(R.string.preferenceIdCheckVol), Context.MODE_PRIVATE);
             setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
             valBt = this.getSharedPreferences(getString(R.string.preferenceIdValBt), Context.MODE_PRIVATE);
             setApp = this.getSharedPreferences("preferenceIdApp", Context.MODE_PRIVATE) ;
@@ -364,12 +379,23 @@ public class MainActivity extends AppCompatActivity {
                     muteChoisi = "désactivé";
 
                 //Choix Volume?
-                int setsVol = setVolume.getInt(cle,0);
+                boolean setsVol = setVol.getBoolean(cle,false);
                 String volChoisi;
-                if(setsVol==0)
+                int volSystChoisi = 0;
+                int volMusChoisi = 0;
+                int volAlarmChoisi = 0;
+                if(!setsVol)
                     volChoisi = "désactivé";
+
                 else{
                     volChoisi = "activé";
+                    setVolSyst = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
+                    setVolMus = this.getSharedPreferences(getString(R.string.preferenceIdVolMus), Context.MODE_PRIVATE);
+                    setVolAlarm = this.getSharedPreferences(getString(R.string.preferenceIdVolAlarm), Context.MODE_PRIVATE);
+
+                    volSystChoisi = setVolSyst.getInt(cle, 0);
+                    volMusChoisi = setVolMus.getInt(cle, 0);
+                    volAlarmChoisi = setVolAlarm.getInt(cle, 0);
                 }
 
                 //Choix Bluetooth?
@@ -409,8 +435,10 @@ public class MainActivity extends AppCompatActivity {
                         if(setsMute)
                             texte = texte+";\n            Met à l'état: "+muteIsOnOff;
                 texte = texte+"\n→Contrôle Volume = "+volChoisi;
-                         if (setsVol>0){
-                             texte = texte+";\n           Volume choisi = "+setsVol;
+                         if (setsVol){
+                             texte = texte+";\n           Volume Système choisi = "+volSystChoisi+
+                                            "\n           Volume Alarme choisi = "+volAlarmChoisi+
+                                            "\n           Volume Musique choisi  = "+volMusChoisi;
                          }
                 texte = texte + "\n→Contrôle Bluetooth = "+ btChoisi;
                         if (setsBt){
@@ -439,8 +467,16 @@ public class MainActivity extends AppCompatActivity {
         effaceSP(setMute);
         //setValMute?;
 
-        setVolume = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
-        effaceSP(setVolume);
+        setVolSyst = this.getSharedPreferences(getString(R.string.preferenceIdVol), Context.MODE_PRIVATE);
+        effaceSP(setVolSyst);
+
+        setVolMus=this.getSharedPreferences(getString(R.string.preferenceIdVolMus), MODE_PRIVATE);
+        setVolAlarm=this.getSharedPreferences(getString(R.string.preferenceIdVolAlarm), MODE_PRIVATE);
+        setVol=this.getSharedPreferences(getString(R.string.preferenceIdCheckVol),MODE_PRIVATE);
+
+        effaceSP(setVolMus);
+        effaceSP(setVol);
+        effaceSP(setVolAlarm);
 
         setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
         effaceSP(setBluetooth);
@@ -478,7 +514,7 @@ public class MainActivity extends AppCompatActivity {
         nomDonne = tagNamingBox.getText().toString();
         ajouteEntreeStringSP(detectedId, nomDonne, sharedPrefId);  /*Cle : ID et Valeur = nom*/
         tagNamingBox.setText("");
-        tagNamingBox.setVisibility(GONE);
+//        tagNamingBox.setVisibility(GONE);
 
         //Récupère Params Wifi
         setWifi = this.getSharedPreferences("preferenceIdWifi", Context.MODE_PRIVATE);
@@ -490,9 +526,9 @@ public class MainActivity extends AppCompatActivity {
             ajouteEntreeBoolSP(detectedId, switchWifi.isChecked(), setValWifi);
         ajouteEntreeBoolSP(detectedId, wifiChoisi, setWifi);
         activWifi.setChecked(false);
-        activWifi.setVisibility(GONE);
+//        activWifi.setVisibility(GONE);
         switchWifi.setChecked(false);
-        switchWifi.setVisibility(GONE);
+//        switchWifi.setVisibility(GONE);
 
         //Récupère params mode silencieux
         setMute = this.getSharedPreferences("preferenceIdMute", Context.MODE_PRIVATE);
@@ -504,23 +540,38 @@ public class MainActivity extends AppCompatActivity {
             ajouteEntreeBoolSP(detectedId, switchMute.isChecked(), setValMute);
         ajouteEntreeBoolSP(detectedId, muteChoisi, setMute);
         activMute.setChecked(false);
-        activMute.setVisibility(GONE);
+//        activMute.setVisibility(GONE);
         switchMute.setChecked(false);
-        switchMute.setVisibility(GONE);
+//        switchMute.setVisibility(GONE);
 
         //Récupère params volume
-        setVolume = this.getSharedPreferences("preferenceIdVol", Context.MODE_PRIVATE);
+        setVol = this.getSharedPreferences(getString(R.string.preferenceIdCheckVol), Context.MODE_PRIVATE);   /*booleen : si gère le volume ou pas*/
+        setVolAlarm = this.getSharedPreferences(getString(R.string.preferenceIdVolAlarm), Context.MODE_PRIVATE);/*valeur du volume Sonnerie*/
+        setVolMus = this.getSharedPreferences(getString(R.string.preferenceIdVolMus), Context.MODE_PRIVATE);
+        setVolSyst = this.getSharedPreferences("preferenceIdVol", Context.MODE_PRIVATE);
+
         activVol = (CheckBox)findViewById(R.id.checkBoxVolume);
         volSpinner = (Spinner)findViewById(R.id.spinnerVolume);
+        musicSpinner = (Spinner)findViewById(R.id.spinnerMusic);
+        alarmSpinner = (Spinner)findViewById(R.id.spinnerAlarm);
+
         boolean volChoisi = activVol.isChecked();
-        int selectedVol=0;
+        int selectedVolSyst=0;
+        int selectedVolMusic=0;
+        int selectedVolAlarm=0;
+        ajouteEntreeBoolSP(detectedId, volChoisi, setVol);
+
         if(volChoisi){
-            selectedVol = (int) volSpinner.getSelectedItem();
+            selectedVolSyst = (int) volSpinner.getSelectedItem();
+            selectedVolMusic = (int) musicSpinner.getSelectedItem();
+            selectedVolAlarm = (int) alarmSpinner.getSelectedItem();
         }
-        ajouteEntreeIntSP(detectedId, selectedVol, setVolume);
+        ajouteEntreeIntSP(detectedId, selectedVolSyst, setVolSyst);
+        ajouteEntreeIntSP(detectedId, selectedVolMusic, setVolMus);
+        ajouteEntreeIntSP(detectedId, selectedVolAlarm, setVolAlarm);
         activVol.setChecked(false);
-        activVol.setVisibility(GONE);
-        volSpinner.setVisibility(GONE);
+//        activVol.setVisibility(GONE);
+//        volSpinner.setVisibility(GONE);
 
         //Récupérer params Bt
         setBluetooth = this.getSharedPreferences(getString(R.string.preferenceIdBt), Context.MODE_PRIVATE);
@@ -535,9 +586,9 @@ public class MainActivity extends AppCompatActivity {
         }
         ajouteEntreeBoolSP(detectedId, btChoisi, setBluetooth);
         activBluetooth.setChecked(false);
-        activBluetooth.setVisibility(GONE);
+//        activBluetooth.setVisibility(GONE);
         switchBluetooth.setChecked(false);
-        switchBluetooth.setVisibility(GONE);
+//        switchBluetooth.setVisibility(GONE);
 
         //Récupère params app
         activApp = (CheckBox)findViewById(R.id.checkBoxApp);
@@ -549,12 +600,13 @@ public class MainActivity extends AppCompatActivity {
             appChoisie = this.getSharedPreferences("preferenceIdAppCh", Context.MODE_PRIVATE);
             String nomAppChoisie = spinnerApp.getSelectedItem().toString();
             ajouteEntreeStringSP(detectedId, nomAppChoisie, appChoisie);
-            spinnerApp.setVisibility(GONE);
+//            spinnerApp.setVisibility(GONE);
        }
-        activApp.setVisibility(GONE);
+//        activApp.setVisibility(GONE);
 
         Button boutonValider = (Button)findViewById(R.id.buttonValider);
         boutonValider.setVisibility(GONE);
+        cacherParametrage();
         Toast.makeText(this, "Paramètres enregistrés", Toast.LENGTH_SHORT).show();
     }
 
@@ -576,6 +628,9 @@ public class MainActivity extends AppCompatActivity {
         activBluetooth.setVisibility(View.VISIBLE);
         activApp.setVisibility(View.VISIBLE);
 
+        boutonAnnuler = (Button)findViewById(R.id.buttonAnnuler);
+        boutonAnnuler.setVisibility(VISIBLE);
+
         tagNamingBox.requestFocus();
         imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.showSoftInput(this.tagNamingBox, InputMethodManager.SHOW_FORCED);
@@ -588,6 +643,8 @@ public class MainActivity extends AppCompatActivity {
         boutonValider = (Button) findViewById(R.id.buttonValider);
         activVol = (CheckBox) findViewById(R.id.checkBoxVolume);
         volSpinner = (Spinner)findViewById(R.id.spinnerVolume);
+        alarmSpinner = (Spinner)findViewById(R.id.spinnerAlarm);
+        musicSpinner = (Spinner)findViewById(R.id.spinnerMusic);
         activBluetooth= (CheckBox) findViewById(R.id.checkBoxBluetooth);
         switchBluetooth = (Switch)findViewById(R.id.switchBluetooth);
         switchWifi = (Switch)findViewById(R.id.switchWifi);
@@ -595,18 +652,47 @@ public class MainActivity extends AppCompatActivity {
         activApp = (CheckBox)findViewById(R.id.checkBoxApp);
         spinnerApp = (Spinner)findViewById(R.id.spinnerApp);
 
+        textVolSyst = (TextView)findViewById(R.id.txtVolSystem);
+        textVolAlarm = (TextView)findViewById(R.id.txtVolAlarm);
+        textVolMus = (TextView)findViewById(R.id.txtVolMus);
+
+        tagNamingBox.setText("");
+
         tagNamingBox.setVisibility(GONE);
         activWifi.setVisibility(GONE);
         activMute.setVisibility(GONE);
         activVol.setVisibility(GONE);
         boutonValider.setVisibility(GONE);
         volSpinner.setVisibility(GONE);
+        alarmSpinner.setVisibility(GONE);
+        musicSpinner.setVisibility(GONE);
         activBluetooth.setVisibility(GONE);
         switchBluetooth.setVisibility(GONE);
         switchWifi.setVisibility(GONE);
         switchMute.setVisibility(GONE);
         activApp.setVisibility(GONE);
         spinnerApp.setVisibility(GONE);
+
+        textVolSyst.setVisibility(GONE);
+        textVolAlarm.setVisibility(GONE);
+        textVolMus.setVisibility(GONE);
+
+        boutonAnnuler = (Button)findViewById(R.id.buttonAnnuler);
+        boutonAnnuler.setVisibility(GONE);
+    }
+
+    public void annulerEntree(View view){
+        activWifi = (CheckBox) findViewById(R.id.checkBoxWifi);
+        activWifi.setChecked(false);
+        activMute = (CheckBox) findViewById(R.id.checkBoxMute);
+        activMute.setChecked(false);
+        activVol = (CheckBox) findViewById(R.id.checkBoxVolume);
+        activVol.setChecked(false);
+        activBluetooth= (CheckBox) findViewById(R.id.checkBoxBluetooth);
+        activBluetooth.setChecked(false);
+        activApp = (CheckBox)findViewById(R.id.checkBoxApp);
+        activApp.setChecked(false);
+        cacherParametrage();
     }
 
     //Agît comme un interrupteur wifi, selon la valeur du boléen en paramètre
@@ -632,15 +718,22 @@ public class MainActivity extends AppCompatActivity {
             audioManager.adjustVolume(AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_SHOW_UI);
     }
 
-    public void choisirVolume(int vol){
+    public void choisirVolumeSyst(int vol){
         audioManager = (AudioManager) this.getSystemService(this.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, vol, AudioManager.FLAG_VIBRATE);
-        //utiliser SFX
-        //audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_DELETE);
+        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, vol, AudioManager.FLAG_VIBRATE);
     }
 
+    public void choisirVolumeMusic(int vol){
+        audioManager = (AudioManager) this.getSystemService(this.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, vol, AudioManager.FLAG_VIBRATE);
+    }
+
+    public void choisirVolumeAlarm(int vol){
+        audioManager = (AudioManager) this.getSystemService(this.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, vol, AudioManager.FLAG_VIBRATE);
+    }
     //Interrupteur données cellulaires => NE MARCHE PLUS DANS LA DERNIERE VERSION
-    private void setMobileDataEnabled(Context context, boolean enabled) {
+   /* private void setMobileDataEnabled(Context context, boolean enabled) {
         final ConnectivityManager conman = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         Class conmanClass = null;
         try {
@@ -672,7 +765,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-    }
+    }*/
 
     public void afficherSpinner(View view){
         //On empêche mute et volume d'être controllés en même temps
@@ -682,27 +775,59 @@ public class MainActivity extends AppCompatActivity {
         switchMute.setVisibility(GONE);
 
         volSpinner = (Spinner)findViewById(R.id.spinnerVolume);
+        alarmSpinner = (Spinner)findViewById(R.id.spinnerAlarm);
+        musicSpinner = (Spinner)findViewById(R.id.spinnerMusic);
 
-        if(volSpinner.getVisibility()==View.GONE) {
-            volSpinner.setVisibility(View.VISIBLE);
+        //Remarque : Pour simplifier le changement de visibilité, on pourait mettre spinner et texte dans un même layout
+        textVolSyst = (TextView)findViewById(R.id.txtVolSystem);
+        textVolAlarm = (TextView)findViewById(R.id.txtVolAlarm);
+        textVolMus = (TextView)findViewById(R.id.txtVolMus);
+
+        spinnerVolActiver(volSpinner, textVolSyst);
+        spinnerVolActiver(alarmSpinner, textVolAlarm);
+        spinnerVolActiver(musicSpinner, textVolMus);
+    }
+
+    public void spinnerVolActiver (Spinner spin, TextView text){
+        activVol = (CheckBox)findViewById(R.id.checkBoxVolume);
+        //if(spin.getVisibility()==View.GONE) {
+        if(activVol.isChecked()) {
+            spin.setVisibility(View.VISIBLE);
+            text.setVisibility(VISIBLE);
             // Create an ArrayAdapter using the string array and a default spinner layout
-            Integer[] items = new Integer[]{1,2,3,4,5,6,7};
+            Integer[] items = new Integer[]{0,1,2,3,4,5,6,7};
             ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(this, android.R.layout.simple_spinner_item, items);
-             // Specify the layout to use when the list of choices appears
+            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             // Apply the adapter to the spinner
-            volSpinner.setAdapter(adapter);
+            spin.setAdapter(adapter);
         }
-        else if(volSpinner.getVisibility()==View.VISIBLE)
-            volSpinner.setVisibility(GONE);
+        //else if(spin.getVisibility()==View.VISIBLE) {
+        else {
+            spin.setVisibility(GONE);
+            text.setVisibility(GONE);
+        }
+
     }
 
     public void uncheckVol(View view){
         //On empêche Volume et Mute d'être controllés en même temps
         activVol = (CheckBox)findViewById(R.id.checkBoxVolume);
         volSpinner = (Spinner)findViewById(R.id.spinnerVolume);
+        musicSpinner = (Spinner)findViewById(R.id.spinnerMusic);
+        alarmSpinner = (Spinner)findViewById(R.id.spinnerAlarm);
+        textVolSyst = (TextView)findViewById(R.id.txtVolSystem);
+        textVolMus = (TextView)findViewById(R.id.txtVolMus);
+        textVolAlarm = (TextView)findViewById(R.id.txtVolAlarm);
+
+
         activVol.setChecked(false);
         volSpinner.setVisibility(GONE);
+        musicSpinner.setVisibility(GONE);
+        alarmSpinner.setVisibility(GONE);
+        textVolSyst.setVisibility(GONE);
+        textVolMus.setVisibility(GONE);
+        textVolAlarm.setVisibility(GONE);
 
         //Affiche le switch pour mute
         afficherSwitchMute();

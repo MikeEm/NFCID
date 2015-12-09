@@ -10,4 +10,7 @@
     <string name="preferenceIdValBt">preferenceIdValBt</string>
     <string name="preferenceIdValWifi">preferenceIdValWifi</string>
     <string name="preferenceIdValMute">preferenceIdValMute</string>
+    <string name="preferenceIdCheckVol">preferenceIdCheckVol</string>
+    <string name="preferenceIdVolMus">preferenceIdVolMus</string>
+    <string name="preferenceIdVolAlarm">preferenceIdVolAlarm</string>
 </resources>
