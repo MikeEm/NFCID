@@ -165,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
         else{
             if(!mNfcAdapter.isEnabled()){
                 monTexte.setText("Il faut activer le capteur NFC !!");
-                //TODO : toggle NFC!!!
             }
             else
                 monTexte.setText(R.string.defaultMessage);
@@ -722,7 +721,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void choisirVolumeSyst(int vol){
         audioManager = (AudioManager) this.getSystemService(this.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, vol, AudioManager.FLAG_VIBRATE);
+        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, vol, AudioManager.FLAG_VIBRATE);
     }
 
     public void choisirVolumeMusic(int vol){
